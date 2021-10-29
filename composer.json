@@ -1,0 +1,13 @@
+{
+	"name": "webchemistry/fixtures",
+	"autoload": {
+		"psr-4": {
+			"WebChemistry\\Fixtures\\": "src"
+		}
+	},
+	"require": {
+		"php": ">= 8.0",
+		"fakerphp/faker": "^1.16",
+		"marcj/topsort": "^2.0"
+	}
+}

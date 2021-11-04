@@ -3,7 +3,9 @@
 namespace WebChemistry\Fixtures\Reference;
 
 use BadMethodCallException;
+use LogicException;
 use OutOfBoundsException;
+use WeakMap;
 use WebChemistry\Fixtures\Utility\Range;
 
 final class ReferenceRepository
@@ -15,8 +17,19 @@ final class ReferenceRepository
 	/** @var mixed[] */
 	private array $processed = [];
 
+	private WeakMap $ignores;
+
+	public function __construct()
+	{
+		$this->ignores = new WeakMap();
+	}
+
 	public function setReference(string $name, object $reference): object
 	{
+		if (isset($this->ignores[$reference])) {
+			throw new LogicException(sprintf('Given object is ignored.'));
+		}
+
 		return $this->references[$reference::class][$name] = $reference;
 	}
 
@@ -39,6 +52,10 @@ final class ReferenceRepository
 	 */
 	public function addProcessed(object $object): object
 	{
+		if (isset($this->ignores[$object])) {
+			return $object;
+		}
+
 		$this->processed[$object::class][] = $object;
 
 		return $object;
@@ -62,6 +79,18 @@ final class ReferenceRepository
 	public function hasReference(string $className, string $name): bool
 	{
 		return isset($this->references[$className][$name]);
+	}
+
+	/**
+	 * @template T of object
+	 * @param T $object
+	 * @return T
+	 */
+	public function ignore(object $object): object
+	{
+		$this->ignores[$object] = true;
+
+		return $object;
 	}
 
 	/**

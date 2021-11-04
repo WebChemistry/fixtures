@@ -24,6 +24,11 @@ final class ReferenceRepository
 		$this->ignores = new WeakMap();
 	}
 
+	/**
+	 * @template T of object
+	 * @param T $reference
+	 * @return T
+	 */
 	public function setReference(string $name, object $reference): object
 	{
 		if (isset($this->ignores[$reference])) {
@@ -33,6 +38,11 @@ final class ReferenceRepository
 		return $this->references[$reference::class][$name] = $reference;
 	}
 
+	/**
+	 * @template T of object
+	 * @param T $object
+	 * @return T
+	 */
 	public function addReference(string $name, object $object): object
 	{
 		if ($this->hasReference($name, $object::class)) {

@@ -28,6 +28,15 @@ class Faker
 		return new self($this->faker->unique());
 	}
 
+	public function float(int|Range|null $decimals = null, int $min = 0, ?int $max = null): float
+	{
+		if ($decimals instanceof Range) {
+			$decimals = mt_rand($decimals->min, $decimals->max);
+		}
+
+		return $this->faker->randomFloat($decimals, $min, $max);
+	}
+
 	public function name(?string $gender = null): string
 	{
 		return $this->faker->name($gender);

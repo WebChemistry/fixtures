@@ -40,7 +40,7 @@ abstract class Fixture
 	final public function run(): iterable
 	{
 		if ($this->repeatLoad) {
-			yield from $this->repeat($this->repeatLoad, $this->load(...));
+			yield from $this->repeatGenerator($this->repeatLoad, $this->load(...));
 		} else {
 			yield from $this->load();
 		}
@@ -68,15 +68,25 @@ abstract class Fixture
 
 	/**
 	 * @template T of object
-	 * @param int $times
 	 * @param callable(): T $callback
-	 * @param mixed[] ...$values
 	 * @return Generator<T>
 	 */
 	protected function repeat(int|Range $times, callable $callback): Generator
 	{
 		for ($i = 0; $i < Range::toInteger($times); $i++) {
 			yield $callback();
+		}
+	}
+
+	/**
+	 * @template T of object
+	 * @param callable(): Generator<T> $callback
+	 * @return Generator<T>
+	 */
+	protected function repeatGenerator(int|Range $times, callable $callback): Generator
+	{
+		for ($i = 0; $i < Range::toInteger($times); $i++) {
+			yield from $callback();
 		}
 	}
 

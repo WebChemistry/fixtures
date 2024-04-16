@@ -31,6 +31,11 @@ abstract class Fixture
 
 	final public function init(FixtureTools $tools): void
 	{
+		$this->faker = $tools->faker;
+		$this->uniqueFaker = $tools->uniqueFaker;
+		$this->ref = $tools->ref;
+		$this->tools = $tools;
+
 		$this->initialize($tools);
 	}
 
@@ -48,10 +53,6 @@ abstract class Fixture
 
 	public function initialize(FixtureTools $tools): void
 	{
-		$this->faker = $tools->faker;
-		$this->uniqueFaker = $tools->uniqueFaker;
-		$this->ref = $tools->ref;
-		$this->tools = $tools;
 	}
 
 	/**

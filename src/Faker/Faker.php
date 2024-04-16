@@ -59,9 +59,9 @@ class Faker
 		return $rand === $max ? null : $rand;
 	}
 
-	public function bool(): bool
+	public function bool(int $chanceOfGettingTrue = 50): bool
 	{
-		return mt_rand(0, 1) === 1;
+		return $this->faker->boolean($chanceOfGettingTrue);
 	}
 
 	public function htmlText(int|Range $paragraphs, bool $emoji = false): string

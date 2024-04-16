@@ -18,6 +18,8 @@ abstract class Fixture
 
 	protected FixtureTools $tools;
 
+	protected Faker $uniqueFaker;
+
 	protected int|Range|null $repeatLoad = null;
 
 	abstract public function getKey(): FixtureKey;
@@ -29,8 +31,6 @@ abstract class Fixture
 
 	final public function init(FixtureTools $tools): void
 	{
-		$tools = $this->configureTools($tools);
-
 		$this->initialize($tools);
 	}
 
@@ -46,14 +46,10 @@ abstract class Fixture
 		}
 	}
 
-	public function configureTools(FixtureTools $tools): FixtureTools
-	{
-		return $tools;
-	}
-
 	public function initialize(FixtureTools $tools): void
 	{
 		$this->faker = $tools->faker;
+		$this->uniqueFaker = $tools->uniqueFaker;
 		$this->ref = $tools->ref;
 		$this->tools = $tools;
 	}

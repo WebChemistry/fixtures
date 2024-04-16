@@ -11,17 +11,15 @@ use WebChemistry\Fixtures\Reference\ReferenceRepository;
 final class FixtureTools
 {
 
+	public readonly Faker $uniqueFaker;
+
 	public function __construct(
 		public readonly ReferenceRepository $ref,
 		public readonly Faker $faker,
 		public readonly FixtureConfig $cfg,
 	)
 	{
-	}
-
-	public function withUniqueFaker(): self
-	{
-		return new self($this->ref, $this->faker->withUnique(), $this->cfg);
+		$this->uniqueFaker = $this->faker->withUnique();
 	}
 
 	/**

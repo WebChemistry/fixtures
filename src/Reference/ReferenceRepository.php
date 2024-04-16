@@ -19,11 +19,53 @@ final class ReferenceRepository
 	/** @var mixed[] */
 	private array $processed = [];
 
+	/** @var mixed[] */
+	private array $buckets = [];
+
 	private WeakMap $ignores;
 
 	public function __construct()
 	{
 		$this->ignores = new WeakMap();
+	}
+
+	/**
+	 * @template T of object
+	 * @param T $reference
+	 * @return T
+	 */
+	public function addToBucket(string $name, object $reference): object
+	{
+		if (!isset($this->buckets[$reference::class])) {
+			$this->buckets[$reference::class] = [];
+		}
+		if (!isset($this->buckets[$reference::class][$name])) {
+			$this->buckets[$reference::class][$name] = [];
+		}
+
+		return $this->buckets[$reference::class][$name][] = $reference;
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T[]
+	 */
+	public function getBucket(string $className, string $name): array
+	{
+		return $this->buckets[$className][$name] ?? throw new OutOfBoundsException(sprintf('Bucket "%s:%s" does not exist', $className, $name));
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
+	 */
+	public function getRandomFromBucket(string $className, string $name): object
+	{
+		$bucket = $this->getBucket($className, $name);
+
+		return $bucket[array_rand($bucket)];
 	}
 
 	/**

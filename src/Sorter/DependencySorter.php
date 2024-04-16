@@ -13,7 +13,7 @@ final class DependencySorter
 	 * @param Fixture[] $fixtures
 	 * @return Fixture[]
 	 */
-	public static function sortDependencies(array $fixtures): iterable
+	public static function sortDependencies(array $fixtures): array
 	{
 		$sorted = new FixedArraySort();
 		$indexed = [];
@@ -22,9 +22,13 @@ final class DependencySorter
 			$indexed[$fixture::class] = $fixture;
 		}
 
+		$return = [];
+
 		foreach ($sorted->sort() as $key) {
-			yield $indexed[$key];
+			$return[] = $indexed[$key];
 		}
+
+		return $return;
 	}
 
 }

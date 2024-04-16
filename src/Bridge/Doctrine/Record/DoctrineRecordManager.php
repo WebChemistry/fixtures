@@ -1,48 +1,71 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\Fixtures\Purger;
+namespace WebChemistry\Fixtures\Bridge\Doctrine\Record;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Identifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use LogicException;
 use MJS\TopSort\Implementations\FixedArraySort;
-use MJS\TopSort\Implementations\StringSort;
+use WebChemistry\Fixtures\Bridge\Doctrine\Key\DoctrineFixtureKey;
+use WebChemistry\Fixtures\Fixture;
+use WebChemistry\Fixtures\Record\RecordManager;
 
-class OrmPurger
+final class DoctrineRecordManager implements RecordManager
 {
-	public const PURGE_MODE_DELETE   = 1;
-	public const PURGE_MODE_TRUNCATE = 2;
-
-	private int $purgeMode = self::PURGE_MODE_DELETE;
 
 	/**
-	 * @param string[] $excluded
+	 * @param string[] $excludeTables
 	 */
 	public function __construct(
-		private EntityManagerInterface $em,
-		private array $excluded = [],
+		private readonly EntityManagerInterface $em,
+		private array $excludeTables = [],
 	)
 	{
 	}
 
-	public function setPurgeMode(int $mode): void
+	public function persist(object $value): void
 	{
-		$this->purgeMode = $mode;
+		$this->em->persist($value);
 	}
 
-	public function getPurgeMode(): int
+	public function flush(): void
 	{
-		return $this->purgeMode;
+		$this->em->flush();
 	}
 
-	public function purge(): void
+	public function isEmpty(Fixture $fixture): bool
+	{
+		$key = $fixture->getKey();
+
+		if (!$key instanceof DoctrineFixtureKey) {
+			throw new LogicException(sprintf('Fixture key must be instance of %s in %s.', DoctrineFixtureKey::class, $fixture::class));
+		}
+
+		$metadata = $this->em->getClassMetadata($key->getClassName());
+
+		return $this->em->getRepository($metadata->name)->count([]) === 0;
+	}
+
+	/**
+	 * @param Fixture[] $fixtures
+	 */
+	public function purge(array $fixtures, int $mode = self::PurgeModeDefault): void
 	{
 		$classes = [];
 
-		foreach ($this->em->getMetadataFactory()->getAllMetadata() as $metadata) {
+		foreach ($fixtures as $fixture) {
+			$key = $fixture->getKey();
+
+			if (!$key instanceof DoctrineFixtureKey) {
+				throw new LogicException(sprintf('Fixture key must be instance of %s in %s.', DoctrineFixtureKey::class, $fixture::class));
+			}
+
+			$metadata = $this->em->getClassMetadata($key->getClassName());
+
 			if ($metadata->isMappedSuperclass || (isset($metadata->isEmbeddedClass) && $metadata->isEmbeddedClass)) {
-				continue;
+				throw new LogicException(sprintf('Entity %s is not an embedded class or superclass.', $metadata->name));
 			}
 
 			$classes[] = $metadata;
@@ -79,7 +102,6 @@ class OrmPurger
 			$connection->getConfiguration(),
 			'getFilterSchemaAssetsExpression'
 		) ? $connection->getConfiguration()->getFilterSchemaAssetsExpression() : null;
-		$emptyFilterExpression = empty($filterExpr);
 
 		$schemaAssetsFilter = method_exists(
 			$connection->getConfiguration(),
@@ -88,12 +110,12 @@ class OrmPurger
 
 		foreach ($orderedTables as $tbl) {
 			// If we have a filter expression, check it and skip if necessary
-			if (! $emptyFilterExpression && ! preg_match($filterExpr, $tbl)) {
+			if (! empty($filterExpr) && ! preg_match($filterExpr, $tbl)) {
 				continue;
 			}
 
 			// If the table is excluded, skip it as well
-			if (array_search($tbl, $this->excluded) !== false) {
+			if (array_search($tbl, $this->excludeTables) !== false) {
 				continue;
 			}
 
@@ -102,7 +124,7 @@ class OrmPurger
 				continue;
 			}
 
-			if ($this->purgeMode === self::PURGE_MODE_DELETE) {
+			if ($mode === self::PurgeModeDelete) {
 				$connection->executeStatement($this->getDeleteFromTableSQL($tbl, $platform));
 			} else {
 				$connection->executeStatement($platform->getTruncateTableSQL($tbl, true));
@@ -160,7 +182,7 @@ class OrmPurger
 						$dependencies[$parentClassName] = [];
 					}
 
-					$dependencies[$parentClassName] = $class->name;
+					$dependencies[$parentClassName][] = $class->name;
 				}
 			}
 		}
@@ -197,9 +219,9 @@ class OrmPurger
 	{
 		if (isset($class->table['schema']) && ! method_exists($class, 'getSchemaName')) {
 			return $class->table['schema'] . '.' .
-				$this->em->getConfiguration()
-					->getQuoteStrategy()
-					->getTableName($class, $platform);
+				   $this->em->getConfiguration()
+					   ->getQuoteStrategy()
+					   ->getTableName($class, $platform);
 		}
 
 		return $this->em->getConfiguration()->getQuoteStrategy()->getTableName($class, $platform);
@@ -215,9 +237,9 @@ class OrmPurger
 	): string {
 		if (isset($assoc['joinTable']['schema']) && ! method_exists($class, 'getSchemaName')) {
 			return $assoc['joinTable']['schema'] . '.' .
-				$this->em->getConfiguration()
-					->getQuoteStrategy()
-					->getJoinTableName($assoc, $class, $platform);
+				   $this->em->getConfiguration()
+					   ->getQuoteStrategy()
+					   ->getJoinTableName($assoc, $class, $platform);
 		}
 
 		return $this->em->getConfiguration()->getQuoteStrategy()->getJoinTableName($assoc, $class, $platform);
@@ -229,4 +251,5 @@ class OrmPurger
 
 		return 'DELETE FROM ' . $tableIdentifier->getQuotedName($platform);
 	}
+
 }

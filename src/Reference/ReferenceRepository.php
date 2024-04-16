@@ -11,6 +11,8 @@ use WebChemistry\Fixtures\Utility\Range;
 final class ReferenceRepository
 {
 
+	public const DefaultReference = 'defaultRef';
+
 	/** @var mixed[] */
 	private array $references = [];
 
@@ -36,6 +38,26 @@ final class ReferenceRepository
 		}
 
 		return $this->references[$reference::class][$name] = $reference;
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
+	 */
+	public function getDefaultReference(string $className): object
+	{
+		return $this->getReference($className, self::DefaultReference);
+	}
+
+	/**
+	 * @template T of object
+	 * @param T $object
+	 * @return T
+	 */
+	public function setDefaultReference(object $reference): object
+	{
+		return $this->setReference(self::DefaultReference, $reference);
 	}
 
 	/**
@@ -76,15 +98,36 @@ final class ReferenceRepository
 	 * @param class-string<T> $className
 	 * @return T
 	 */
-	public function getReference(string $className, string $name)
+	public function getReference(string $className, string $name): object
+	{
+		return $this->getReferenceOrNull($className, $name)
+			   ??
+			   throw new OutOfBoundsException(sprintf('Reference to "%s:%s" does not exist', $className, $name));
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T|null
+	 */
+	public function getReferenceOrNull(string $className, string $name): ?object
 	{
 		if (! $this->hasReference($className, $name)) {
-			throw new OutOfBoundsException(sprintf('Reference to "%s:%s" does not exist', $className, $name));
+			return null;
 		}
 
 		return $this->references[$className][$name];
 	}
 
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
+	 */
+	public function getReferenceOrRandom(string $className, string $name): object
+	{
+		return $this->getReferenceOrNull($className, $name) ?? $this->getRandom($className);
+	}
 
 	public function hasReference(string $className, string $name): bool
 	{

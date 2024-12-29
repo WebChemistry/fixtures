@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use WebChemistry\Fixtures\Bridge\Doctrine\Record\DoctrineRecordManager;
+use WebChemistry\Fixtures\Bridge\Doctrine\Record\RecordManagerPersister;
 use WebChemistry\Fixtures\Command\LoadCommand;
 use WebChemistry\Fixtures\Fixture;
 use WebChemistry\Fixtures\FixtureManager;
@@ -40,6 +41,8 @@ final class FixtureBundle extends AbstractBundle
 		$services->set(LoadCommand::class)
 			->autowire()
 			->autoconfigure();
+
+		$services->set(RecordManagerPersister::class);
 
 		$builder->registerForAutoconfiguration(Fixture::class)
 			->addTag('fixture');

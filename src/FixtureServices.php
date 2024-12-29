@@ -15,10 +15,9 @@ final readonly class FixtureServices
 	public function __construct(
 		public ReferenceRepository $ref,
 		public Hydrator $hydrator,
-		?Faker $faker = null,
 	)
 	{
-		$this->faker = $faker ?? new Faker();
+		$this->faker = new Faker();
 	}
 
 	public static function defaults(): self

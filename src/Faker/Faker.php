@@ -12,21 +12,21 @@ use WebChemistry\Fixtures\Faker\Objects\Ticker;
 use WebChemistry\Fixtures\Faker\Provider\TickerProvider;
 use WebChemistry\Fixtures\Utility\Range;
 
-class Faker
+final readonly class Faker
 {
 
-	private Generator|UniqueGenerator $faker;
+	public Generator|UniqueGenerator $original;
 
 	public function __construct(
 		Generator|UniqueGenerator|null $faker = null,
 	)
 	{
-		$this->faker = $faker ?? Factory::create();
+		$this->original = $faker ?? Factory::create();
 	}
 
 	public function withUnique(bool $reset = false): self
 	{
-		return new self($this->faker->unique($reset));
+		return new self($this->original->unique($reset));
 	}
 
 	public function float(int|Range|null $decimals = null, int $min = 0, ?int $max = null): float
@@ -35,12 +35,12 @@ class Faker
 			$decimals = mt_rand($decimals->min, $decimals->max);
 		}
 
-		return $this->faker->randomFloat($decimals, $min, $max);
+		return $this->original->randomFloat($decimals, $min, $max);
 	}
 
 	public function name(?string $gender = null): string
 	{
-		return $this->faker->name($gender);
+		return $this->original->name($gender);
 	}
 
 	public function asciiString(int|Range $length, string $charList = '0-9a-z'): string
@@ -50,12 +50,12 @@ class Faker
 
 	public function dateTimeBetween(string $startDay = '- 30 years', string $endDay = 'now'): DateTime
 	{
-		return $this->faker->dateTimeBetween($startDay, $endDay);
+		return $this->original->dateTimeBetween($startDay, $endDay);
 	}
 
 	public function dateTimeImmutableBetween(string $startDay = '- 30 years', string $endDay = 'now'): DateTimeImmutable
 	{
-		return DateTimeImmutable::createFromInterface($this->faker->dateTimeBetween($startDay, $endDay));
+		return DateTimeImmutable::createFromInterface($this->original->dateTimeBetween($startDay, $endDay));
 	}
 
 	public function randomNullableNumber(int $min, int $max): ?int
@@ -67,7 +67,7 @@ class Faker
 
 	public function bool(int $chanceOfGettingTrue = 50): bool
 	{
-		return $this->faker->boolean($chanceOfGettingTrue);
+		return $this->original->boolean($chanceOfGettingTrue);
 	}
 
 	public function htmlText(int|Range $paragraphs, bool $emoji = false): string
@@ -77,7 +77,7 @@ class Faker
 			return '';
 		}
 
-		$paragraphs = $this->faker->paragraphs($count);
+		$paragraphs = $this->original->paragraphs($count);
 
 		if (is_string($paragraphs)) {
 			$paragraphs = [$paragraphs];
@@ -86,7 +86,7 @@ class Faker
 		if ($emoji) {
 			$rand = array_rand($paragraphs);
 
-			$paragraphs[$rand] = $paragraphs[$rand] . ' ' . $this->faker->emoji();
+			$paragraphs[$rand] = $paragraphs[$rand] . ' ' . $this->original->emoji();
 		}
 
 		return '<p>' . implode('</p><p>', $paragraphs) . '</p>';
@@ -94,13 +94,13 @@ class Faker
 
 	public function email(): string
 	{
-		return $this->faker->email();
+		return $this->original->email();
 	}
 
 	public function words(int|Range $words): string
 	{
 		/** @var string */
-		return $this->faker->words(Range::toInteger($words), true);
+		return $this->original->words(Range::toInteger($words), true);
 	}
 
 	public function ticker(): Ticker
@@ -112,22 +112,22 @@ class Faker
 
 	public function randomFloat(?int $maxDecimals = null, int|float $min = 0, int|float|null $max = null): float
 	{
-		return $this->faker->randomFloat($maxDecimals, $min, $max);
+		return $this->original->randomFloat($maxDecimals, $min, $max);
 	}
 
 	public function numberBetween(int $min = 0, int $max = 2147483647): int
 	{
-		return $this->faker->numberBetween($min, $max);
+		return $this->original->numberBetween($min, $max);
 	}
 
 	public function text(int|Range $maxNbChars = 200): string
 	{
-		return $this->faker->text(Range::toInteger($maxNbChars));
+		return $this->original->text(Range::toInteger($maxNbChars));
 	}
 
 	public function boolean(int $chanceOfGettingTrue = 50): bool
 	{
-		return $this->faker->boolean($chanceOfGettingTrue);
+		return $this->original->boolean($chanceOfGettingTrue);
 	}
 
 }

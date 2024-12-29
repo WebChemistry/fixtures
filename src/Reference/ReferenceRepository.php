@@ -22,6 +22,7 @@ final class ReferenceRepository
 	/** @var mixed[] */
 	private array $buckets = [];
 
+	/** @var WeakMap<object, bool> */
 	private WeakMap $ignores;
 
 	public function __construct()
@@ -94,7 +95,7 @@ final class ReferenceRepository
 
 	/**
 	 * @template T of object
-	 * @param T $object
+	 * @param T $reference
 	 * @return T
 	 */
 	public function setDefaultReference(object $reference): object
@@ -209,7 +210,7 @@ final class ReferenceRepository
 	/**
 	 * @template T of object
 	 * @param class-string<T> $className
-	 * @return T
+	 * @return T[]
 	 */
 	public function getAllProcessed(string $className): array
 	{

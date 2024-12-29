@@ -14,15 +14,13 @@ use WebChemistry\Fixtures\Record\RecordManager;
 final class LoadCommand extends Command
 {
 
-	protected static $defaultName = 'fixtures:load';
-
 	public function __construct(
-		private FixtureManager $fixtureManager,
-		private FixtureRegistry $fixtureRegistry,
-		private RecordManager $recordManager,
+		private readonly FixtureManager $fixtureManager,
+		private readonly FixtureRegistry $fixtureRegistry,
+		private readonly RecordManager $recordManager,
 	)
 	{
-		parent::__construct();
+		parent::__construct('fixtures:load');
 	}
 
 	protected function configure(): void
@@ -49,7 +47,7 @@ final class LoadCommand extends Command
 	}
 
 	/**
-	 * @param Fixture[] $fixtures
+	 * @param Fixture<object>[] $fixtures
 	 */
 	private function loadFixtures(InputInterface $input, OutputInterface $output, array $fixtures, bool $purge): bool
 	{
@@ -111,7 +109,7 @@ final class LoadCommand extends Command
 
 		$output->writeln('Loading fixtures.');
 
-		$this->fixtureManager->load($this->recordManager, $fixtures);
+		$this->fixtureManager->load($fixtures);
 
 		$output->writeln('<info>Done</info>');
 

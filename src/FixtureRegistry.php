@@ -7,47 +7,41 @@ use InvalidArgumentException;
 final class FixtureRegistry
 {
 
-	/** @var array<string, Fixture> */
+	/** @var array<string, Fixture<object>> */
 	private array $fixtures = [];
 
-	/** @var array<class-string<Fixture>, Fixture> */
+	/** @var array<class-string<Fixture<object>>, Fixture<object>> */
 	private array $fixtureClassIndex = [];
 
+	/** @var iterable<Fixture<object>> */
+	private iterable $unprocessed;
+
 	/**
-	 * @param Fixture[] $fixtures
+	 * @param iterable<Fixture<object>> $fixtures
 	 */
-	public function __construct(array $fixtures)
+	public function __construct(iterable $fixtures)
 	{
-		foreach ($fixtures as $fixture) {
-			$key = $fixture->getKey()->getName();
-
-			if (isset($this->fixtures[$key])) {
-				throw new InvalidArgumentException(sprintf('Fixture with key %s already exists.', $key));
-			}
-
-			if (isset($this->fixtureClassIndex[$fixture::class])) {
-				throw new InvalidArgumentException(sprintf('Fixture with class %s already exists.', $fixture::class));
-			}
-
-			$this->fixtures[$key] = $fixture;
-			$this->fixtureClassIndex[$fixture::class] = $fixture;
-		}
+		$this->unprocessed = $fixtures;
 	}
 
 	/**
-	 * @return Fixture[]
+	 * @return Fixture<object>[]
 	 */
 	public function getAll(): array
 	{
+		$this->process();
+
 		return $this->fixtures;
 	}
 
 	/**
 	 * @param string[] $keys
-	 * @return Fixture[]
+	 * @return Fixture<object>[]
 	 */
 	public function getByKeysWithDependencies(array $keys): array
 	{
+		$this->process();
+
 		$fixtures = [];
 
 		foreach ($keys as $key) {
@@ -78,7 +72,30 @@ final class FixtureRegistry
 	 */
 	public function getByClassName(string $id): ?Fixture
 	{
+		$this->process();
+
+		/** @var T|null */
 		return $this->fixtureClassIndex[$id] ?? null;
+	}
+
+	private function process(): void
+	{
+		foreach ($this->unprocessed as $fixture) {
+			$key = $fixture->getKey()->getName();
+
+			if (isset($this->fixtures[$key])) {
+				throw new InvalidArgumentException(sprintf('Fixture with key %s already exists.', $key));
+			}
+
+			if (isset($this->fixtureClassIndex[$fixture::class])) {
+				throw new InvalidArgumentException(sprintf('Fixture with class %s already exists.', $fixture::class));
+			}
+
+			$this->fixtures[$key] = $fixture;
+			$this->fixtureClassIndex[$fixture::class] = $fixture;
+		}
+
+		$this->unprocessed = [];
 	}
 
 }

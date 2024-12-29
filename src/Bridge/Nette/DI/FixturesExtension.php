@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\Fixtures\DI;
+namespace WebChemistry\Fixtures\Bridge\Nette\DI;
 
 use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;

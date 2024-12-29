@@ -2,19 +2,14 @@
 
 namespace WebChemistry\Fixtures;
 
-use InvalidArgumentException;
 use Nette\Utils\Arrays;
-use WebChemistry\Fixtures\Config\FixtureConfig;
-use WebChemistry\Fixtures\Faker\Faker;
+use WebChemistry\Fixtures\Bridge\Doctrine\Record\RecordManagerPersister;
 use WebChemistry\Fixtures\Record\RecordManager;
 use WebChemistry\Fixtures\Reference\ReferenceRepository;
 use WebChemistry\Fixtures\Sorter\DependencySorter;
-use WebChemistry\Fixtures\Utility\FixtureTools;
 
 final class FixtureManager
 {
-
-	private Faker $faker;
 
 	/** @var callable[] */
 	public array $onFixtureLoading = [];
@@ -28,20 +23,16 @@ final class FixtureManager
 	/** @var callable[] */
 	public array $onRecord = [];
 
-	/**
-	 * @param array<string, array<string, mixed>> $config
-	 */
 	public function __construct(
-		?Faker $faker = null,
-		private array $config = [],
+		private RecordManagerPersister $persister,
 	)
 	{
-		$this->faker = $faker ?? new Faker();
 	}
 
 	/**
 	 * @param RecordManager $recordManager
-	 * @param Fixture[] $fixtures
+	 * @param Fixture<object>[] $fixtures
+	 * @return string[]
 	 */
 	public function validate(RecordManager $recordManager, array $fixtures): array
 	{
@@ -57,23 +48,15 @@ final class FixtureManager
 	}
 
 	/**
-	 * @param Fixture[] $fixtures
+	 * @param Fixture<object>[] $fixtures
 	 */
-	public function load(RecordManager $recordManager, array $fixtures): void
+	public function load(array $fixtures): void
 	{
 		$reference = new ReferenceRepository();
 		$sorted = DependencySorter::sortDependencies($fixtures);
 
 		foreach ($sorted as $fixture) {
-			$rawConfig = $this->config[$fixture->getKey()->getName()] ?? [];
-
-			if (!is_array($rawConfig)) {
-				throw new InvalidArgumentException(sprintf('Config for fixture %s must be array.', $fixture->getKey()->getName()));
-			}
-
 			Arrays::invoke($this->onFixtureInitializing, $fixture);
-
-			$fixture->init(new FixtureTools($reference, $this->faker, new FixtureConfig($rawConfig)));
 		}
 
 		$pos = 1;
@@ -85,7 +68,7 @@ final class FixtureManager
 			foreach ($fixture->run() as $object) {
 				Arrays::invoke($this->onRecord, $object);
 
-				$recordManager->persist($object);
+				$this->persister->persist($object);
 
 				$reference->addProcessed($object);
 
@@ -97,7 +80,7 @@ final class FixtureManager
 			$pos++;
 		}
 
-		$recordManager->flush();
+		$this->persister->flush();
 	}
 
 }

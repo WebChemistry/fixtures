@@ -3,15 +3,14 @@
 namespace WebChemistry\Fixtures\Sorter;
 
 use MJS\TopSort\Implementations\FixedArraySort;
-use SplFixedArray;
 use WebChemistry\Fixtures\Fixture;
 
 final class DependencySorter
 {
 
 	/**
-	 * @param Fixture[] $fixtures
-	 * @return Fixture[]
+	 * @param Fixture<object>[] $fixtures
+	 * @return Fixture<object>[]
 	 */
 	public static function sortDependencies(array $fixtures): array
 	{

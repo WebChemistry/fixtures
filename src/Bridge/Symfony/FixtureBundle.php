@@ -42,7 +42,8 @@ final class FixtureBundle extends AbstractBundle
 			->autowire()
 			->autoconfigure();
 
-		$services->set(RecordManagerPersister::class);
+		$services->set(RecordManagerPersister::class)
+			->autowire();
 
 		$builder->registerForAutoconfiguration(Fixture::class)
 			->addTag('fixture');

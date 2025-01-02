@@ -5,14 +5,17 @@ namespace WebChemistry\Fixtures\Bridge\Symfony;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 use WebChemistry\Fixtures\Bridge\Doctrine\Record\DoctrineRecordManager;
 use WebChemistry\Fixtures\Bridge\Doctrine\Record\RecordManagerPersister;
 use WebChemistry\Fixtures\Command\LoadCommand;
 use WebChemistry\Fixtures\Fixture;
 use WebChemistry\Fixtures\FixtureManager;
 use WebChemistry\Fixtures\FixtureRegistry;
+use WebChemistry\Fixtures\FixtureServices;
+use WebChemistry\Fixtures\Hydrator\Hydrator;
+use WebChemistry\Fixtures\Hydrator\ReflectionHydrator;
 use WebChemistry\Fixtures\Record\RecordManager;
+use WebChemistry\Fixtures\Reference\ReferenceRepository;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 final class FixtureBundle extends AbstractBundle
@@ -24,6 +27,8 @@ final class FixtureBundle extends AbstractBundle
 	public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
 	{
 		$services = $container->services();
+		$services->defaults()
+			->tag('container.no_preload');
 
 		$services->set(DoctrineRecordManager::class)
 			->autowire()
@@ -44,6 +49,15 @@ final class FixtureBundle extends AbstractBundle
 
 		$services->set(RecordManagerPersister::class)
 			->autowire();
+
+		$services->set(FixtureServices::class)
+			->autowire();
+
+		$services->set(ReferenceRepository::class)
+			->autowire();
+
+		$services->set(ReflectionHydrator::class)
+			->alias(Hydrator::class, ReflectionHydrator::class);
 
 		$builder->registerForAutoconfiguration(Fixture::class)
 			->addTag('fixture');

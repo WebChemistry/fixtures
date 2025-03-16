@@ -5,7 +5,6 @@ namespace WebChemistry\Fixtures\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use WebChemistry\Fixtures\Fixture;
 use WebChemistry\Fixtures\FixtureManager;
 use WebChemistry\Fixtures\FixtureRegistry;
@@ -27,13 +26,15 @@ final class LoadCommand extends Command
 	{
 		$this->setDescription('Creates fixtures')
 			->addArgument('fixture', null, 'Load only specific fixture')
-			->addOption('no-purge', null, null, 'Do not purge database before loading fixtures');
+			->addOption('load-only', null, null, 'Do not purge database before loading fixtures')
+			->addOption('purge-only', null, null, 'Purge database only');
 	}
 
 	public function run(InputInterface $input, OutputInterface $output): int
 	{
 		$fixtureName = $input->getArgument('fixture');
-		$purge = !$input->getOption('no-purge');
+		$loadOnly = (bool) $input->getOption('load-only');
+		$purgeOnly = (bool) $input->getOption('purge-only');
 
 		if (is_string($fixtureName) && $fixtureName) {
 			$fixtures = $this->fixtureRegistry->getByKeysWithDependencies(
@@ -43,16 +44,6 @@ final class LoadCommand extends Command
 			$fixtures = $this->fixtureRegistry->getAll();
 		}
 
-		return $this->loadFixtures($input, $output, $fixtures, $purge) ? self::SUCCESS : self::FAILURE;
-	}
-
-	/**
-	 * @param Fixture<object>[] $fixtures
-	 */
-	private function loadFixtures(InputInterface $input, OutputInterface $output, array $fixtures, bool $purge): bool
-	{
-		$io = new SymfonyStyle($input, $output);
-
 		$fixtureNames = implode(', ', array_map(
 			fn (Fixture $fixture) => $fixture->getKey()->getName(),
 			$fixtures,
@@ -60,18 +51,44 @@ final class LoadCommand extends Command
 
 		$output->writeln(sprintf('Fixtures to load: %s', $fixtureNames));
 
-		if (!$io->confirm('Do you want to load fixtures?')) {
-			return false;
+		if ($purgeOnly) {
+			return $this->purge($output, $fixtures) ? self::SUCCESS : self::FAILURE;
 		}
 
-		if ($purge) {
-			$output->write('Purging fixtures.');
-
-			$this->recordManager->purge($fixtures);
-
-			$output->writeln(' <info>Done</info>');
+		if ($loadOnly) {
+			return $this->load($output, $fixtures) ? self::SUCCESS : self::FAILURE;
 		}
 
+		if (!$this->purge($output, $fixtures)) {
+			return self::FAILURE;
+		}
+
+		if (!$this->load($output, $fixtures)) {
+			return self::FAILURE;
+		}
+
+		return self::SUCCESS;
+	}
+
+	/**
+	 * @param Fixture<object>[] $fixtures
+	 */
+	private function purge(OutputInterface $output, array $fixtures): bool
+	{
+		$output->write('Purging fixtures.');
+
+		$this->recordManager->purge($fixtures);
+
+		$output->writeln(' <info>Done</info>');
+
+		return true;
+	}
+
+	/**
+	 * @param Fixture<object>[] $fixtures
+	 */
+	private function load(OutputInterface $output, array $fixtures): bool
+	{
 		$total = count($fixtures);
 
 		$this->fixtureManager->onFixtureLoading[] = function (Fixture $fixture, int $position) use ($output, $total): void {

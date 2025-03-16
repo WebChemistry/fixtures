@@ -22,6 +22,7 @@ final class OrmPurgerRegistry
 		private readonly ManagerRegistry $registry,
 	)
 	{
+		$this->map = new WeakMap();
 	}
 
 	/**

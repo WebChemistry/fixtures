@@ -17,6 +17,8 @@ interface Fixture
 	 */
 	public function dependencies(): array;
 
+	public function getSqlFile(): ?string;
+
 	/**
 	 * @return iterable<T>
 	 */

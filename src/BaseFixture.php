@@ -56,6 +56,11 @@ abstract class BaseFixture implements Fixture
 	 */
 	abstract protected function load(): iterable;
 
+	public function getSqlFile(): ?string
+	{
+		return null;
+	}
+
 	protected function repeatCount(): int|Range
 	{
 		return 1;

@@ -27,6 +27,11 @@ final readonly class FixtureWithDefaults implements Fixture
 		return $this->fixture->getKey();
 	}
 
+	public function getSqlFile(): ?string
+	{
+		return $this->fixture->getSqlFile();
+	}
+
 	public function dependencies(): array
 	{
 		return $this->fixture->dependencies();

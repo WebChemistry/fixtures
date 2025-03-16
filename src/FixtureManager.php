@@ -2,7 +2,10 @@
 
 namespace WebChemistry\Fixtures;
 
+use LogicException;
 use Nette\Utils\Arrays;
+use Nette\Utils\FileSystem;
+use WebChemistry\Fixtures\Bridge\Doctrine\Key\DoctrineFixtureKey;
 use WebChemistry\Fixtures\Bridge\Doctrine\Record\RecordManagerPersister;
 use WebChemistry\Fixtures\Record\RecordManager;
 use WebChemistry\Fixtures\Reference\ReferenceRepository;
@@ -64,7 +67,20 @@ final class FixtureManager
 		foreach ($sorted as $fixture) {
 			Arrays::invoke($this->onFixtureLoading, $fixture, $pos);
 
+			$sqlFile = $fixture->getSqlFile();
 			$count = 0;
+
+			if ($sqlFile) {
+				$key = $fixture->getKey();
+				$sql = FileSystem::read($sqlFile);
+
+				if (!$key instanceof DoctrineFixtureKey) {
+					throw new LogicException('Only DoctrineFixtureKey is supported.');
+				}
+
+				$this->persister->executeStatement($key->getClassName(), $sql);
+			}
+
 			foreach ($fixture->run() as $object) {
 				Arrays::invoke($this->onRecord, $object);
 

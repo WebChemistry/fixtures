@@ -39,6 +39,14 @@ final class RecordManagerPersister
 		return $em;
 	}
 
+	/**
+	 * @param class-string $entity
+	 */
+	public function executeStatement(string $entity, string $sql): int
+	{
+		return (int) $this->getEntityManager($entity)->getConnection()->executeStatement($sql);
+	}
+
 	public function persist(object $value): void
 	{
 		if (!isset($this->entityManagers[$value::class])) {

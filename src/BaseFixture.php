@@ -4,6 +4,7 @@ namespace WebChemistry\Fixtures;
 
 use Generator;
 use WebChemistry\Fixtures\Faker\Faker;
+use WebChemistry\Fixtures\Reference\FixtureLazyReference;
 use WebChemistry\Fixtures\Reference\ReferenceRepository;
 use WebChemistry\Fixtures\Utility\Range;
 
@@ -88,7 +89,15 @@ abstract class BaseFixture implements Fixture
 	 */
 	final public function make(array $values = []): object
 	{
-		return $this->hydrator->hydrate($this->getClassName(), array_merge($this->defaults(), $values));
+		$values = array_merge($this->defaults(), $values);
+
+		foreach ($values as &$value) {
+			if ($value instanceof FixtureLazyReference) {
+				$value = $value->resolve();
+			}
+		}
+
+		return $this->hydrator->hydrate($this->getClassName(), $values);
 	}
 
 	/**

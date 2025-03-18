@@ -298,4 +298,14 @@ final class ReferenceRepository
 		return $this->getRandom($className);
 	}
 
+	/**
+	 * @template T of object|object[]|null
+	 * @param callable(): T $fn
+	 * @return FixtureLazyReference<T>
+	 */
+	public function lazy(callable $fn): FixtureLazyReference
+	{
+		return new FixtureLazyReference($fn);
+	}
+
 }

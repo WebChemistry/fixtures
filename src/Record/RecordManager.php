@@ -13,8 +13,9 @@ interface RecordManager
 
 	/**
 	 * @param Fixture<object>[] $fixtures
+	 * @return string[]
 	 */
-	public function purge(array $fixtures, int $mode = self::PurgeModeDefault): void;
+	public function purge(array $fixtures, int $mode = self::PurgeModeDefault): array;
 
 	/**
 	 * @param Fixture<object> $fixture

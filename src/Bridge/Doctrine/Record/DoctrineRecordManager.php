@@ -59,8 +59,9 @@ final class DoctrineRecordManager implements RecordManager
 
 	/**
 	 * @param Fixture<object>[] $fixtures
+	 * @return string[]
 	 */
-	public function purge(array $fixtures, int $mode = self::PurgeModeDefault): void
+	public function purge(array $fixtures, int $mode = self::PurgeModeDefault): array
 	{
 		$registry = new OrmPurgerRegistry($this->registry);
 
@@ -74,7 +75,7 @@ final class DoctrineRecordManager implements RecordManager
 			$registry->add($key->getClassName());
 		}
 
-		$registry->purge($mode, $this->excludeTables);
+		return $registry->purge($mode, $this->excludeTables);
 	}
 
 }

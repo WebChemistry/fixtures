@@ -67,29 +67,43 @@ final class OrmPurgerRegistry
 
 	/**
 	 * @param string[] $excludeTables
+	 * @return string[]
 	 */
-	public function purge(int $mode, array $excludeTables): void
+	public function purge(int $mode, array $excludeTables): array
 	{
+		$purged = [];
+
 		foreach ($this->entityManagers as $em) {
 			$classesToPurge = $this->map[$em] ?? throw new LogicException('No classes to purge.');
 
-			$exclude = $this->getTablesToExclude($classesToPurge, $em->getMetadataFactory()->getAllMetadata());
-			$purger = new ORMPurger($em, array_unique(array_merge($exclude, $excludeTables)));
+			$exclude = $this->getTablesToExclude(
+				$classesToPurge,
+				$em->getMetadataFactory()->getAllMetadata(),
+				$tableNames = $em->getConnection()->createSchemaManager()->listTableNames(),
+			);
+			$excluded = array_unique(array_merge($exclude, $excludeTables));
+
+			$purger = new ORMPurger($em, $excluded);
 			$purger->setPurgeMode($mode);
 			$purger->purge();
+
+			$purged = array_merge($purged, array_diff($tableNames, $excluded));
 		}
+
+		return $purged;
 	}
 
 	/**
 	 * @param ClassMetadata<object>[] $classesToPurge
 	 * @param ClassMetadata<object>[] $allClasses
+	 * @param string[] $tablesInDatabase
 	 * @return string[]
 	 */
-	private function getTablesToExclude(array $classesToPurge, array $allClasses): array
+	private function getTablesToExclude(array $classesToPurge, array $allClasses, array $tablesInDatabase): array
 	{
 		foreach ($classesToPurge as $metadata) {
 			foreach ($allClasses as $key => $metadata2) {
-				if ($metadata->name === $metadata2->name) {
+				if ($metadata->name === $metadata2->name && in_array($metadata->getTableName(), $tablesInDatabase, true)) {
 					unset($allClasses[$key]);
 				}
 			}

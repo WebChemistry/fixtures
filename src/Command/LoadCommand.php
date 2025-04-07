@@ -75,11 +75,15 @@ final class LoadCommand extends Command
 	 */
 	private function purge(OutputInterface $output, array $fixtures): bool
 	{
-		$output->write('Purging fixtures.');
+		$output->writeln('Purging fixtures.');
 
-		$this->recordManager->purge($fixtures);
+		$tableNames = $this->recordManager->purge($fixtures);
 
-		$output->writeln(' <info>Done</info>');
+		foreach ($tableNames as $tableName) {
+			$output->writeln(sprintf('Purged <info>%s</info> table.', $tableName));
+		}
+
+		$output->writeln('<info>Done</info>');
 
 		return true;
 	}

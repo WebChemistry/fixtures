@@ -28,6 +28,7 @@ final class FixtureManager
 
 	public function __construct(
 		private RecordManagerPersister $persister,
+		private ?string $sqlFileDirectory = null,
 	)
 	{
 	}
@@ -71,6 +72,14 @@ final class FixtureManager
 			$count = 0;
 
 			if ($sqlFile) {
+				if (!FileSystem::isAbsolute($sqlFile)) {
+					if (!$this->sqlFileDirectory) {
+						throw new LogicException('SQL file directory is not set.');
+					}
+
+					$sqlFile = $this->sqlFileDirectory . '/' . $sqlFile;
+				}
+
 				$key = $fixture->getKey();
 				$sql = FileSystem::read($sqlFile);
 

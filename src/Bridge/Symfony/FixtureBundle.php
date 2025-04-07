@@ -2,6 +2,7 @@
 
 namespace WebChemistry\Fixtures\Bridge\Symfony;
 
+use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
@@ -35,6 +36,7 @@ final class FixtureBundle extends AbstractBundle
 			->alias(RecordManager::class, DoctrineRecordManager::class);
 
 		$services->set(FixtureManager::class)
+			->arg('$sqlFileDirectory', $config['sql_file_directory'] ?? null)
 			->autowire();
 
 		$services->set('fixture.registry', FixtureRegistry::class)
@@ -61,6 +63,14 @@ final class FixtureBundle extends AbstractBundle
 
 		$builder->registerForAutoconfiguration(Fixture::class)
 			->addTag('fixture');
+	}
+
+	public function configure(DefinitionConfigurator $definition): void
+	{
+		$definition->rootNode()
+			->children()
+				->stringNode('sql_file_directory')->defaultNull()->end()
+			->end();
 	}
 
 }

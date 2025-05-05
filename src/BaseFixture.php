@@ -90,10 +90,17 @@ abstract class BaseFixture implements Fixture
 	final public function make(array $values = []): object
 	{
 		$values = array_merge($this->defaults(), $values);
+		$specialMapping = $this->getSpecialMapping();
 
 		foreach ($values as &$value) {
 			if ($value instanceof FixtureLazyReference) {
 				$value = $value->resolve();
+			}
+		}
+
+		foreach ($specialMapping as $field => $fn) {
+			if (array_key_exists($field, $values)) {
+				$values[$field] = $fn($values[$field]);
 			}
 		}
 
@@ -119,6 +126,14 @@ abstract class BaseFixture implements Fixture
 	 * @return array<string, mixed>
 	 */
 	abstract protected function defaults(): array;
+
+	/**
+	 * @return array<string, callable>
+	 */
+	protected function getSpecialMapping(): array
+	{
+		return [];
+	}
 
 	/**
 	 * @param array<string, mixed> $values

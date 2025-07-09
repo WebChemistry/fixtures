@@ -2,19 +2,22 @@
 
 namespace WebChemistry\Fixtures;
 
+use Doctrine\Persistence\ManagerRegistry;
 use WebChemistry\Fixtures\Faker\Faker;
 use WebChemistry\Fixtures\Hydrator\Hydrator;
 use WebChemistry\Fixtures\Hydrator\ReflectionHydrator;
 use WebChemistry\Fixtures\Reference\ReferenceRepository;
 
-final readonly class FixtureServices
+final class FixtureServices
 {
 
-	public Faker $faker;
+	private static ?ManagerRegistry $managerRegistry = null;
+
+	public readonly Faker $faker;
 
 	public function __construct(
-		public ReferenceRepository $ref,
-		public Hydrator $hydrator,
+		public readonly ReferenceRepository $ref,
+		public readonly Hydrator $hydrator,
 	)
 	{
 		$this->faker = new Faker();
@@ -22,7 +25,17 @@ final readonly class FixtureServices
 
 	public static function defaults(): self
 	{
-		return new self(new ReferenceRepository(), new ReflectionHydrator());
+		$managerRegistry = self::$managerRegistry;
+		if ($managerRegistry === null) {
+			throw new \LogicException('ManagerRegistry is not set. Use FixtureServices::setManagerRegistryForTests() to set it.');
+		}
+
+		return new self(new ReferenceRepository(), new ReflectionHydrator(self::$managerRegistry));
+	}
+
+	public static function setManagerRegistryForTests(ManagerRegistry $managerRegistry): void
+	{
+		self::$managerRegistry = $managerRegistry;
 	}
 
 }

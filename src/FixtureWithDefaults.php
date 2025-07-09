@@ -32,6 +32,9 @@ final readonly class FixtureWithDefaults implements Fixture
 		return $this->fixture->getSqlFile();
 	}
 
+	/**
+	 * @return list<class-string<Fixture<covariant object>>>
+	 */
 	public function dependencies(): array
 	{
 		return $this->fixture->dependencies();

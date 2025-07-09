@@ -11,6 +11,9 @@ use RuntimeException;
 abstract class SqlOnlyFixture implements Fixture
 {
 
+	/**
+	 * @return list<class-string<Fixture<covariant object>>>
+	 */
 	public function dependencies(): array
 	{
 		return [];

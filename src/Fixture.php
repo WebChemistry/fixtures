@@ -13,7 +13,7 @@ interface Fixture
 	public function getKey(): FixtureKey;
 
 	/**
-	 * @return class-string<Fixture<object>>[]
+	 * @return list<class-string<Fixture<covariant object>>>
 	 */
 	public function dependencies(): array;
 

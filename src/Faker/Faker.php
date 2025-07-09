@@ -86,7 +86,7 @@ final readonly class Faker
 		if ($emoji) {
 			$rand = array_rand($paragraphs);
 
-			$paragraphs[$rand] = $paragraphs[$rand] . ' ' . $this->original->emoji();
+			$paragraphs[$rand] = $paragraphs[$rand] . ' ' . $this->original->emoji(); // @phpstan-ignore binaryOp.invalid
 		}
 
 		return '<p>' . implode('</p><p>', $paragraphs) . '</p>';

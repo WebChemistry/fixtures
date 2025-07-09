@@ -66,8 +66,8 @@ final class ReflectionHydrator implements Hydrator
 	}
 
 	/**
-	 * @param string $entity
-	 * @return array<string, array<string, callable(mixed): mixed>>
+	 * @param class-string $entity
+	 * @return array<string, callable(mixed): mixed>
 	 */
 	private function getConverters(string $entity): array
 	{
@@ -82,7 +82,6 @@ final class ReflectionHydrator implements Hydrator
 
 		assert($manager instanceof EntityManagerInterface);
 		$metadata = $manager->getClassMetadata($entity);
-		assert($metadata instanceof ClassMetadata);
 
 		$platform = $manager->getConnection()->getDatabasePlatform();
 		$builtInTypes = $this->getBuiltInTypes();
@@ -110,6 +109,7 @@ final class ReflectionHydrator implements Hydrator
 			$reflection = new ReflectionClass(Types::class);
 			$constants = $reflection->getConstants();
 
+			/** @var string $type */
 			foreach ($constants as $type) {
 				$this->builtInTypes[$type] = $type;
 			}

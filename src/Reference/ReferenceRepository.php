@@ -13,13 +13,13 @@ final class ReferenceRepository
 
 	public const DefaultReference = 'defaultRef';
 
-	/** @var mixed[] */
+	/** @var array<class-string, array<string, object>> */
 	private array $references = [];
 
-	/** @var mixed[] */
+	/** @var array<class-string, list<object>> */
 	private array $processed = [];
 
-	/** @var mixed[] */
+	/** @var array<class-string, array<string, list<object>>> */
 	private array $buckets = [];
 
 	/** @var WeakMap<object, bool> */
@@ -37,23 +37,19 @@ final class ReferenceRepository
 	 */
 	public function addToBucket(string $name, object $reference): object
 	{
-		if (!isset($this->buckets[$reference::class])) {
-			$this->buckets[$reference::class] = [];
-		}
-		if (!isset($this->buckets[$reference::class][$name])) {
-			$this->buckets[$reference::class][$name] = [];
-		}
+		$this->buckets[$reference::class][$name][] = $reference;
 
-		return $this->buckets[$reference::class][$name][] = $reference;
+		return $reference;
 	}
 
 	/**
 	 * @template T of object
 	 * @param class-string<T> $className
-	 * @return T[]
+	 * @return list<T>
 	 */
 	public function getBucket(string $className, string $name): array
 	{
+		/** @var list<T> */
 		return $this->buckets[$className][$name] ?? throw new OutOfBoundsException(sprintf('Bucket "%s:%s" does not exist', $className, $name));
 	}
 
@@ -155,11 +151,8 @@ final class ReferenceRepository
 	 */
 	public function getReferenceOrNull(string $className, string $name): ?object
 	{
-		if (! $this->hasReference($className, $name)) {
-			return null;
-		}
-
-		return $this->references[$className][$name];
+		/** @var T|null */
+		return $this->references[$className][$name] ?? null;
 	}
 
 	/**
@@ -197,10 +190,12 @@ final class ReferenceRepository
 	public function getRandom(string $className, bool $onlyReferences = false): object
 	{
 		if (!$onlyReferences && isset($this->processed[$className])) {
+			/** @var T */
 			return $this->processed[$className][array_rand($this->processed[$className])];
 		}
 
 		if (isset($this->references[$className])) {
+			/** @var T */
 			return $this->references[$className][array_rand($this->references[$className])];
 		}
 
@@ -214,6 +209,7 @@ final class ReferenceRepository
 	 */
 	public function getAllProcessed(string $className): array
 	{
+		/** @var T[] */
 		return $this->processed[$className] ?? [];
 	}
 
@@ -228,8 +224,10 @@ final class ReferenceRepository
 
 		$haystack = null;
 		if (!$onlyReferences && isset($this->processed[$className])) {
+			/** @var list<T> $haystack */
 			$haystack = $this->processed[$className];
 		} else if (isset($this->references[$className])) {
+			/** @var T[] $haystack */
 			$haystack = $this->references[$className];
 		}
 
@@ -258,8 +256,10 @@ final class ReferenceRepository
 
 		$haystack = null;
 		if (!$onlyReferences && isset($this->processed[$className])) {
+			/** @var list<T> $haystack */
 			$haystack = $this->processed[$className];
 		} else if (isset($this->references[$className])) {
+			/** @var T[] $haystack */
 			$haystack = $this->references[$className];
 		}
 

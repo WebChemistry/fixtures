@@ -67,7 +67,7 @@ final class FixtureBundle extends AbstractBundle
 
 	public function configure(DefinitionConfigurator $definition): void
 	{
-		$definition->rootNode()
+		$definition->rootNode() // @phpstan-ignore-line
 			->children()
 				->stringNode('sql_file_directory')->defaultNull()->end()
 			->end();

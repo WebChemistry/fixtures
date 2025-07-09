@@ -30,7 +30,7 @@ final class FixtureServices
 			throw new \LogicException('ManagerRegistry is not set. Use FixtureServices::setManagerRegistryForTests() to set it.');
 		}
 
-		return new self(new ReferenceRepository(), new ReflectionHydrator(self::$managerRegistry));
+		return new self(new ReferenceRepository(), new ReflectionHydrator($managerRegistry));
 	}
 
 	public static function setManagerRegistryForTests(ManagerRegistry $managerRegistry): void

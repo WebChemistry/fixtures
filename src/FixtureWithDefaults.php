@@ -33,7 +33,7 @@ final readonly class FixtureWithDefaults implements Fixture
 	}
 
 	/**
-	 * @return list<class-string<Fixture<covariant object>>>
+	 * @return list<class-string<Fixture<object>>>
 	 */
 	public function dependencies(): array
 	{

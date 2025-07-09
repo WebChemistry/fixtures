@@ -5,7 +5,7 @@ namespace WebChemistry\Fixtures;
 use WebChemistry\Fixtures\Key\FixtureKey;
 
 /**
- * @template T of object
+ * @template-covariant T of object
  */
 interface Fixture
 {
@@ -13,7 +13,7 @@ interface Fixture
 	public function getKey(): FixtureKey;
 
 	/**
-	 * @return list<class-string<Fixture<covariant object>>>
+	 * @return list<class-string<Fixture<object>>>
 	 */
 	public function dependencies(): array;
 

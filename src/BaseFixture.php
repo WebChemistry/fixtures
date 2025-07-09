@@ -76,7 +76,7 @@ abstract class BaseFixture implements Fixture
 	}
 
 	/**
-	 * @return list<class-string<Fixture<covariant object>>>
+	 * @return list<class-string<Fixture<object>>>
 	 */
 	public function dependencies(): array
 	{

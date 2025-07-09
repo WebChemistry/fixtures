@@ -8,10 +8,11 @@ final class TickerProvider
 {
 
 	/**
-	 * @return Ticker[]
+	 * @return list<Ticker>
 	 */
 	public static function getTickers(): array
 	{
+		/** @var list<Ticker> */
 		return require __DIR__ . '/../../../data/tickers.php';
 	}
 

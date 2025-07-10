@@ -59,6 +59,7 @@ final class FixtureBundle extends AbstractBundle
 			->autowire();
 
 		$services->set(ReflectionHydrator::class)
+			->autowire()
 			->alias(Hydrator::class, ReflectionHydrator::class);
 
 		$builder->registerForAutoconfiguration(Fixture::class)

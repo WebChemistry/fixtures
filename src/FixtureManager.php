@@ -87,7 +87,7 @@ final class FixtureManager
 					throw new LogicException('Only DoctrineFixtureKey is supported.');
 				}
 
-				$this->persister->executeStatement($key->getClassName(), $sql);
+				$count += $this->persister->executeStatement($key->getClassName(), $sql);
 			}
 
 			foreach ($fixture->run() as $object) {

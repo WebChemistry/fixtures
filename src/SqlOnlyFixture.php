@@ -11,6 +11,8 @@ use RuntimeException;
 abstract class SqlOnlyFixture implements Fixture
 {
 
+	abstract public function getSqlFile(): string;
+
 	/**
 	 * @return list<class-string<Fixture<object>>>
 	 */

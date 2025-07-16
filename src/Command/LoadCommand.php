@@ -96,7 +96,7 @@ final class LoadCommand extends Command
 		$total = count($fixtures);
 
 		$this->fixtureManager->onFixtureLoading[] = function (Fixture $fixture, int $position) use ($output, $total): void {
-			$output->write(sprintf(
+			$output->writeln(sprintf(
 				'%d/%d <comment>[%s]</comment> Loading fixture %s.',
 				$position,
 				$total,
@@ -107,7 +107,7 @@ final class LoadCommand extends Command
 
 		$this->fixtureManager->onFixtureFinished[] = function (Fixture $fixture, int $count) use ($output): void {
 			$output->writeln(sprintf(
-				' Loaded <info>%d</info> records. <info>Done</info>',
+				'Loaded <info>%d</info> records.',
 				$count,
 			));
 		};

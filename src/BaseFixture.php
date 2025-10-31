@@ -15,6 +15,9 @@ use WebChemistry\Fixtures\Utility\Range;
 abstract class BaseFixture implements Fixture
 {
 
+	/** @var array<class-string, array<string, int>> */
+	private static array $sequences = [];
+
 	protected readonly Faker $faker;
 
 	protected readonly ReferenceRepository $ref;
@@ -30,6 +33,20 @@ abstract class BaseFixture implements Fixture
 		$this->faker = $this->services->faker;
 		$this->ref = $this->services->ref;
 		$this->hydrator = $this->services->hydrator;
+	}
+
+	/**
+	 * @param non-empty-string|null $name
+	 * @return int<1, max>
+	 */
+	protected function primaryKeySequence(?string $name = null): int
+	{
+		$class = $this->getClassName();
+		if (!isset(self::$sequences[$class][$name])) {
+			self::$sequences[$class][$name] = 1;
+		}
+
+		return self::$sequences[$class][$name]++; // @phpstan-ignore return.type
 	}
 
 	/**

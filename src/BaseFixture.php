@@ -24,12 +24,12 @@ abstract class BaseFixture implements Fixture
 	protected ?Faker $uniqueFaker = null;
 
 	final public function __construct(
-		FixtureServices $services,
+		private readonly FixtureServices $services,
 	)
 	{
-		$this->faker = $services->faker;
-		$this->ref = $services->ref;
-		$this->hydrator = $services->hydrator;
+		$this->faker = $this->services->faker;
+		$this->ref = $this->services->ref;
+		$this->hydrator = $this->services->hydrator;
 	}
 
 	/**
@@ -105,6 +105,18 @@ abstract class BaseFixture implements Fixture
 		}
 
 		return $this->hydrator->hydrate($this->getClassName(), $values);
+	}
+
+	/**
+	 * @template TF of object
+	 * @param class-string<BaseFixture<TF>> $fixture
+	 * @param array<string, mixed> $values
+	 * @return TF
+	 */
+	protected function makeFromAnotherFixture(string $fixture, array $values = []): object
+	{
+		$instance = new $fixture($this->services);
+		return $instance->make($values);
 	}
 
 	/**
